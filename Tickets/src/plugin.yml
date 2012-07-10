@@ -1,0 +1,28 @@
+name: Tickets
+main: za.net.quantumsicarius.tickets.Tickets
+version: 0.0.3
+depend: [Spout]
+authors: [Quantum-Sicarius,Guy_de_Siguro]
+commands:
+   ticket:
+      description: Shows the ticket help page
+      usage: /<command> <param> <param>
+
+permissions:
+   tickets.*:
+     description: Gives access to all tickets commands
+     children:
+        tickets.new : true
+        tickets.view : true
+        tickets.highpriority : true
+   tickets.new:
+     description: Gives you access to create a new ticket
+     defualt: true
+   ticket.view:
+     description: Gives you access to view tickets
+     defualt: op
+   ticket.highpriority:
+     description: Gives the player extra priority when they create a ticket
+     defualt: op
+
+
