@@ -2,6 +2,7 @@ name: Tickets
 main: za.net.quantumsicarius.tickets.Tickets
 version: 0.0.3
 depend: [Spout]
+load: startup
 authors: [Quantum-Sicarius,Guy_de_Siguro]
 commands:
    ticket:

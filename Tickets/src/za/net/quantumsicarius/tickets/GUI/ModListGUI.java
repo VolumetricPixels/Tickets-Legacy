@@ -32,7 +32,7 @@ public class ModListGUI {
 		heading.setText(ChatColor.GREEN + "Mod List");
 		heading.setWidth(70);
 		heading.setHeight(10);
-		heading.setX(140);
+		heading.setX(160);
 		heading.setY(10);
 		
 		list = new GenericListWidget();

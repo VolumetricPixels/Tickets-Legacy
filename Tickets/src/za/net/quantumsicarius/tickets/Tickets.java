@@ -95,16 +95,16 @@ public class Tickets extends JavaPlugin implements Listener{
 		config = new ConfigManager(this);
 		// Get the latest image id
 		nextPhotoId = config.getNextPhotoId();
+		
+		// Register event listeners
+		getServer().getPluginManager().registerEvents(this, this);
+		
 		// Connect to database
 		setupDB(config.getDatabaseHost(),
 				config.getDataBasePort(),
 				config.getDatabase(),
 				config.getDatabaseUser(), 
 				config.getDatabasePassword());
-		
-		// Register event listeners
-		getServer().getPluginManager().registerEvents(this, this);
-		
 		log.info("Enabled!");
 	}
 	
@@ -114,6 +114,11 @@ public class Tickets extends JavaPlugin implements Listener{
 	public void setupDB(String host,int port, String Database, String User, String Password) {
 		db = new Database(host, port, Database, User, Password, log);
 		db.connect();
+		
+		if (!db.isConnected()) {
+			log.severe("Failed to connect to database, disabling plugin!");
+			this.getServer().getPluginManager().disablePlugin(this);
+		}
 	}
 	
 	/**
