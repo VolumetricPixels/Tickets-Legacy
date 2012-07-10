@@ -1,7 +1,7 @@
-Database: tickets
-DatabaseHost: 127.0.0.1
-DatabasePort: 3306
-DatabaseUser: root
-DatabasePassword: 123
+Database: tickets        ##The database name
+DatabaseHost: 127.0.0.1  ##The database host address, 127.0.0.1 is localhost
+DatabasePort: 3306       ##The database port, 3306 is the defualt port
+DatabaseUser: root       ##The username of the database account 
+DatabasePassword: 123    ##The password to access the database account
 
-NextPhotoId: 1
+NextPhotoId: 1           ##Don't touch!

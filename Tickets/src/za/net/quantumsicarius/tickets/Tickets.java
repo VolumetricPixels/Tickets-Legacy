@@ -74,7 +74,7 @@ public class Tickets extends JavaPlugin implements Listener{
 		closeDB();
 		
 		config.savePhotoid(nextPhotoId);
-		System.out.println("Diabled!");
+		log.info("Tickets Disabled!");
 	}
 
 	@Override
@@ -105,7 +105,7 @@ public class Tickets extends JavaPlugin implements Listener{
 				config.getDatabase(),
 				config.getDatabaseUser(), 
 				config.getDatabasePassword());
-		log.info("Enabled!");
+		log.info("Tickets Enabled!");
 	}
 	
 	/**
@@ -144,7 +144,6 @@ public class Tickets extends JavaPlugin implements Listener{
                 				newTicket((Player) sender);
                 			}
                 			else {
-                				// TODO:Create ticket via command
                 				//sender.sendMessage(PluginTitle + ChatColor.AQUA + "Will help you soon my child, for now go get SpoutCraft!");
                 				if (args.length > 1) {
                     				newNonSpoutTicket((Player) sender, args[1], args[2]);
