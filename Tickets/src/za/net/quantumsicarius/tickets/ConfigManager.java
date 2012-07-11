@@ -18,13 +18,15 @@ public class ConfigManager {
 	
 	private InputStream defconfig;
 	private YamlConfiguration yml;
-	private File file = new File("plugins" + File.separator + "Tickets" + File.separator + "config.yml");
+	private File file;
 	
 	private Logger log;
 	
 	public ConfigManager(Plugin plugin, Logger log) {
 		this.plugin = plugin;
 		this.log = log;
+		
+		file = new File(plugin.getDataFolder() + File.separator + "config.yml");
 		
 		yml = new YamlConfiguration();
 		
@@ -41,7 +43,7 @@ public class ConfigManager {
 				byte buf[]=new byte[1024];
 				int len;
 				
-				defconfig = plugin.getResource("config.yml");
+				defconfig = plugin.getClass().getResourceAsStream("config.yml");
 				
 				while((len = defconfig.read(buf)) > 0) {
 					out.write(buf,0,len);
@@ -69,31 +71,36 @@ public class ConfigManager {
 	}
 	
 	public String getDatabaseHost() {
-		try {
-			return yml.getString("DatabaseHost");
-		} catch (Exception e) {
-			log.severe("[Tickets] Unable to get 'Database' from config file: " + e.getMessage());
+		String out = yml.getString("DatabaseHost");
+		
+		if (out == null) {
+			log.warning("[Tickets] Unable to get 'DatabaseHost' from config file!");
+			return "None";
 		}
-		return "None";
+		
+		return out;
 	}
 	
 	public Integer getDataBasePort() {
-		try {
-			return yml.getInt("DatabasePort");
-		} catch (Exception e) {
-			log.severe("[Tickets] Unable to get 'DatabasePort' from config file: " + e.getMessage());
+		Integer out = yml.getInt("DatabasePort");
+		
+		if (out == null | out == 0) {
+			log.warning("[Tickets] Unable to get 'DatabasePort' from config file!");
+			return 0;
 		}
-		return 0;
+		
+		return out;
 	}
 	
 	public String getDatabaseUser() {
-		try {
-			return yml.getString("DatabaseUser");
-		} catch (Exception e) {
-			log.severe("[Tickets] Unable to get 'DatabaseUser' from config file: " + e.getMessage());
+		String out = yml.getString("DatabaseUser");
+		
+		if (out == null) {
+			log.warning("[Tickets] Unable to get 'DatabaseUser' from config file!");	
+			return "None";
 		}
 		
-		return "None";
+		return out;
 	}
 	
 	public String getDatabasePassword() {
@@ -107,23 +114,25 @@ public class ConfigManager {
 	}
 	
 	public String getDatabase() {
-		try {
-			return yml.getString("Database");
-		} catch (Exception e) {
-			log.severe("[Tickets] Unable to get 'Database' from config file: " + e.getMessage());
-		}
+		String out = yml.getString("Database");
 		
-		return "None";
+		if (out == null) {
+			log.warning("[Tickets] Unable to get 'Database' from config file!");
+			return "None";
+		}
+
+		return out;
 	}
 
 	public int getNextPhotoId() {
-		try {
-			return yml.getInt("NextPhotoId");
-		} catch (Exception e) {
-			log.severe("[Tickets] Unable to get 'NextPhotoId' from config file: " + e.getMessage());
+		Integer out = yml.getInt("NextPhotoId");
+		
+		if (out == null | out == 0) {
+			log.warning("[Tickets] Unable to get 'NextPhotoId' from config file!");
+			return 1;
 		}
 		
-		return 0;
+		return out;
 	}
 
 	public void savePhotoid(int nextPhotoId) {
@@ -135,14 +144,15 @@ public class ConfigManager {
 		}
 	}
 
-	public String getDatabaseType() {
-		try {
-			return yml.getString("DatabaseType");
-		} catch (Exception e) {
-			log.severe("[Tickets] Unable to get 'NextPhotoId' from config file: " + e.getMessage());
+	public String getDatabaseType() {		
+		String out = yml.getString("DatabaseType");
+		
+		if (out == null) {
+			log.warning("[Tickets] Unable to get 'DatabaseType' from config file!");
+			return "None";
 		}
 		
-		return "None";
+		return out;
 	}
 	
 	public void reload() {

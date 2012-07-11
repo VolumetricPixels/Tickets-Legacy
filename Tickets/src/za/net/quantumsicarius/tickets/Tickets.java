@@ -112,15 +112,16 @@ public class Tickets extends JavaPlugin implements Listener{
 		if (db.isConnected()) {
 			log.info("[Tickets] Enabled!");
 		} else {
-			log.severe("[Tickets] Failed to connect to database, disabling plugin!");
-			this.getServer().getPluginManager().disablePlugin(this);
+			log.severe("[Tickets] Failed to connect to database, Using SQLite!");
+			db = new Database(DatabaseTypes.SQLite, log);
+			db.connect();
 		}
 	}
 	
 	/**
 	 * Connect to Database
 	 */
-	public void setupDB(String host,int port, String Database, String User, String Password) {
+	public void setupDB(String host,int port, String Database, String User, String Password) {	
 		if (config.getDatabaseType().equalsIgnoreCase("mysql")) {
 			db = new Database(DatabaseTypes.MySQL, log);
 			db.setDatabase(Database);
@@ -131,7 +132,7 @@ public class Tickets extends JavaPlugin implements Listener{
 		} else if (config.getDatabaseType().equalsIgnoreCase("sqlite")) {
 			db = new Database(DatabaseTypes.SQLite, log);
 		} else {
-			log.severe("[Tickets] Invalid database type! The supported types are: 'MySQL' and 'SQLite'");
+			log.warning("[Tickets] Invalid database type! The supported types are: 'MySQL' and 'SQLite'");
 			db = new Database(DatabaseTypes.SQLite, log);
 		}
 		db.connect();
