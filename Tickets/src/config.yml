@@ -1,3 +1,4 @@
+DatabaseType: MySQL      ##The database type can be: "MySQL" or "SQLite"
 Database: tickets        ##The database name
 DatabaseHost: 127.0.0.1  ##The database host address, 127.0.0.1 is localhost
 DatabasePort: 3306       ##The database port, 3306 is the defualt port

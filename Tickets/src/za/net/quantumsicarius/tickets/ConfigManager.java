@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Logger;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -13,18 +14,27 @@ import org.bukkit.plugin.Plugin;
 
 public class ConfigManager {
 
-	Plugin plugin;
+	public Plugin plugin;
 	
-	InputStream defconfig;
-	YamlConfiguration yml;
-	File file = new File("plugins" + File.separator + "Tickets" + File.separator + "config.yml");
+	private InputStream defconfig;
+	private YamlConfiguration yml;
+	private File file = new File("plugins" + File.separator + "Tickets" + File.separator + "config.yml");
 	
-	public ConfigManager(Plugin plugin) {
+	private Logger log;
+	
+	public ConfigManager(Plugin plugin, Logger log) {
 		this.plugin = plugin;
+		this.log = log;
 		
 		yml = new YamlConfiguration();
 		
 		if (!file.exists()) {
+			if (!file.getParentFile().exists()) {
+				file.getParentFile().mkdirs();
+			}
+			
+			log.info("[Tickets] Config doesn't exist, creating a new one!");
+			
 			try {			
 				OutputStream out = new FileOutputStream(file);				
 				
@@ -43,6 +53,8 @@ public class ConfigManager {
 			catch (Exception e) {
 				e.printStackTrace();
 			}
+		} else {
+			log.info("[Tickets] Found config file!");
 		}
 			
 		try {
@@ -57,15 +69,31 @@ public class ConfigManager {
 	}
 	
 	public String getDatabaseHost() {
-		return yml.getString("DatabaseHost");
+		try {
+			return yml.getString("DatabaseHost");
+		} catch (Exception e) {
+			log.severe("[Tickets] Unable to get 'Database' from config file: " + e.getMessage());
+		}
+		return "None";
 	}
 	
 	public Integer getDataBasePort() {
-		return yml.getInt("DatabasePort");
+		try {
+			return yml.getInt("DatabasePort");
+		} catch (Exception e) {
+			log.severe("[Tickets] Unable to get 'DatabasePort' from config file: " + e.getMessage());
+		}
+		return 0;
 	}
 	
 	public String getDatabaseUser() {
-		return yml.getString("DatabaseUser");
+		try {
+			return yml.getString("DatabaseUser");
+		} catch (Exception e) {
+			log.severe("[Tickets] Unable to get 'DatabaseUser' from config file: " + e.getMessage());
+		}
+		
+		return "None";
 	}
 	
 	public String getDatabasePassword() {
@@ -79,11 +107,23 @@ public class ConfigManager {
 	}
 	
 	public String getDatabase() {
-		return yml.getString("Database");
+		try {
+			return yml.getString("Database");
+		} catch (Exception e) {
+			log.severe("[Tickets] Unable to get 'Database' from config file: " + e.getMessage());
+		}
+		
+		return "None";
 	}
 
 	public int getNextPhotoId() {
-		return yml.getInt("NextPhotoId");
+		try {
+			return yml.getInt("NextPhotoId");
+		} catch (Exception e) {
+			log.severe("[Tickets] Unable to get 'NextPhotoId' from config file: " + e.getMessage());
+		}
+		
+		return 0;
 	}
 
 	public void savePhotoid(int nextPhotoId) {
@@ -91,6 +131,28 @@ public class ConfigManager {
 		try {
 			yml.save(file);
 		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public String getDatabaseType() {
+		try {
+			return yml.getString("DatabaseType");
+		} catch (Exception e) {
+			log.severe("[Tickets] Unable to get 'NextPhotoId' from config file: " + e.getMessage());
+		}
+		
+		return "None";
+	}
+	
+	public void reload() {
+		try {
+			yml.load(file);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (InvalidConfigurationException e) {
 			e.printStackTrace();
 		}
 	}

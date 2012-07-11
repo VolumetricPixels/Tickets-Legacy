@@ -9,10 +9,12 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import za.net.quantumsicarius.tickets.Ticket;
+import za.net.quantumsicarius.tickets.Enums.DatabaseTypes;
 
 public class Database {
 	
 	private Connection connection;
+	private DatabaseTypes type;
 	
 	private Statement statement;
 	private ResultSet resultset;
@@ -27,24 +29,10 @@ public class Database {
 	
 	/**
 	 * Constructor
-	 * @param host The host URL
-	 * @param port The host port number
-	 * @param database The database name
-	 * @param username The database username
-	 * @param password The database password
 	 * @param log The logger instance
 	 */
-	public Database(String host,
-			int port,
-			String database,
-			String username,
-			String password,
-			Logger log) {
-		this.host = host;
-		this.port = port;
-		this.database = database;
-		this.username = username;
-		this.password = password;
+	public Database(DatabaseTypes type ,Logger log) {
+		this.type = type;
 		this.log = log;
 	}
 	
@@ -53,13 +41,29 @@ public class Database {
 	 */
 	public void connect() {
 		try {
-			connection = DriverManager.getConnection(getURL(), username, password);
-			log.info("Succesfully connected to the database!");
+			if (type == DatabaseTypes.MySQL) {
+				connection = DriverManager.getConnection(getMySQLURL(), username, password);
+				log.info("[Tickets] Using MySQL");
+			}
+			else if (type == DatabaseTypes.SQLite) {
+				// register the driver 
+				String sDriverName = "org.sqlite.JDBC";
+				try {
+					Class.forName(sDriverName);
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+				
+				connection = DriverManager.getConnection(getSQLliteURL());
+				log.info("[Tickets] Using SQLite");
+			}
+			
+			log.info("[Tickets] Succesfully connected to the database!");
 			
 			// Create table
 			createTable();
 		} catch (SQLException e) {
-			log.severe("A SQL error occured while connecting: " + e.getMessage());
+			log.severe("[Tickets] A SQL error occured while connecting: " + e.getMessage());
 		}
 	}
 	
@@ -67,7 +71,7 @@ public class Database {
 	 * Builds the URL to connect to a MySQL database
 	 * @return
 	 */
-	private String getURL() {
+	private String getMySQLURL() {
 		StringBuilder url = new StringBuilder();
 		url.append("jdbc:mysql://");
 		url.append(host);
@@ -80,6 +84,14 @@ public class Database {
 	}
 	
 	/**
+	 * Builds the URL to connect to a SQL lite database
+	 * @return
+	 */
+	private String getSQLliteURL() {
+		return "jdbc:sqlite:plugins/Tickets/tickets.db";
+	}
+	
+	/**
 	 * Closes the connection to the database
 	 */
 	public void close() {
@@ -87,7 +99,7 @@ public class Database {
 		try {
 			statement.close();
 		} catch (SQLException e) {
-			log.severe("A SQL error occured while closing the statement: " + e.getMessage());
+			log.severe("[Tickets] A SQL error occured while closing the statement: " + e.getMessage());
 		} catch (NullPointerException e) {
 			// Ignore error
 		}
@@ -95,7 +107,7 @@ public class Database {
 		try {
 			resultset.close();
 		} catch (SQLException e) {
-			log.severe("A SQL error occured while closing the result set: " + e.getMessage());
+			log.severe("[Tickets] A SQL error occured while closing the result set: " + e.getMessage());
 		} catch (NullPointerException e) {
 			// Ignore error
 		}
@@ -103,7 +115,7 @@ public class Database {
 		try {
 			connection.close();
 		} catch (SQLException e) {
-			log.severe("A SQL error occured while closing the connection: " + e.getMessage());
+			log.severe("[Tickets] A SQL error occured while closing the connection: " + e.getMessage());
 		} catch (NullPointerException e) {
 			// Ignore error
 		}
@@ -114,13 +126,22 @@ public class Database {
 	 * @return True if the connection still exists
 	 */
 	public boolean isConnected() {
-		try {
-			return connection != null && !connection.isClosed() && connection.isValid(5000);
-		} catch (SQLException e) {
-			return false;
-		} catch (NullPointerException e) {
+		if (type == DatabaseTypes.MySQL) {
+			try {
+				return connection != null && !connection.isClosed() && connection.isValid(5000);
+			} catch (SQLException e) {
+				return false;
+			} catch (NullPointerException e) {
+				return false;
+			}
+		}
+		else if (type == DatabaseTypes.SQLite) {
+			return true;
+		}
+		else {
 			return false;
 		}
+
 	}
 	
 	
@@ -135,8 +156,12 @@ public class Database {
 			StringBuilder query = new StringBuilder();
 			query.append("CREATE TABLE IF NOT EXISTS Tickets");
 			query.append("(");
-			query.append("id int PRIMARY KEY NOT NULL AUTO_INCREMENT,");
-			query.append("Open boolean,");
+			if (type == DatabaseTypes.MySQL) {
+				query.append("id int PRIMARY KEY NOT NULL AUTO_INCREMENT,");
+			} else if (type == DatabaseTypes.SQLite) {
+				query.append("id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,");
+			}
+			query.append("Open INTEGER,");
 			query.append("Author varchar(255),");
 			query.append("Time long,");
 			query.append("Category varchar(255),");
@@ -152,7 +177,7 @@ public class Database {
 			statement = connection.createStatement();
 			statement.execute(query.toString());
 		} catch (SQLException e) {
-			log.severe("A SQL error occured while executing a Query: " + e.getMessage());
+			log.severe("[Tickets] A SQL error occured while executing a Query: " + e.getMessage());
 		}
 	}
 	
@@ -170,7 +195,7 @@ public class Database {
 			statement = connection.createStatement();
 			statement.execute(query);
 		} catch (SQLException e) {
-			log.severe("A SQL error occured while executing a Query: " + e.getMessage());
+			log.severe("[Tickets] A SQL error occured while executing a Query: " + e.getMessage());
 		}
 	}
 	
@@ -188,7 +213,7 @@ public class Database {
 				return resultset.getInt("id");
 			}
 		} catch (SQLException e) {
-			log.severe("A SQL error occured while executing a Query: " + e.getMessage());
+			log.severe("[Tickets] A SQL error occured while executing a Query: " + e.getMessage());
 		}
 		return 0;
 	}
@@ -205,7 +230,7 @@ public class Database {
 			
 			return resultset;
 		} catch (SQLException e) {
-			log.severe("A SQL error occured while executing a Query: " + e.getMessage());
+			log.severe("[Tickets] A SQL error occured while executing a Query: " + e.getMessage());
 		}
 		return null;
 	}
@@ -235,7 +260,11 @@ public class Database {
 		if (ticket.getId() == 0) {
 			StringBuilder query = new StringBuilder();
 			query.append("INSERT INTO Tickets (Open ,Author, Time, Category, Title, Location, Priority, Description, Assignee, ImageId) VALUES (");
-			query.append(ticket.getOpen());
+			if (ticket.getOpen()) {
+				query.append(1);
+			} else {
+				query.append(2);
+			}
 			query.append(",'" + ticket.getAuthor() + "'");
 			query.append("," + ticket.getTime());
 			query.append(",'" + ticket.getCategory() + "'" );
@@ -260,7 +289,11 @@ public class Database {
 			query.append(", Location='" + ticket.getReportedLocation() + "'");
 			query.append(", ImageId='" + ticket.getImageId() + "'");
 			query.append(", Category='"+ ticket.getCategory() +"'");
-			query.append(", Open=" + ticket.getOpen());
+			if (ticket.getOpen()) {
+				query.append(", Open=" + 1);
+			} else {
+				query.append(", Open=" + 2);
+			}
 			
 			query(query.toString());
 		}
@@ -281,7 +314,7 @@ public class Database {
 				list.add(resultset.getInt("id"));
 			}
 		} catch (SQLException e) {
-			log.severe("A SQL error occured while executing a query: " + e.getMessage());
+			log.severe("[Tickets] A SQL error occured while executing a query: " + e.getMessage());
 		}
 		
 		return list;
@@ -328,6 +361,14 @@ public class Database {
 	}
 	
 	/**
+	 * Returns the database type (MySQL / SQL lite)
+	 * @return
+	 */
+	public DatabaseTypes getDatabaseType() {
+		return type;
+	}
+	
+	/**
 	 * Returns the classes used logger
 	 * @return
 	 */
@@ -353,6 +394,10 @@ public class Database {
 	
 	public void setPassword(String password) {
 		this.password = password;
+	}
+	
+	public void setType(DatabaseTypes type) {
+		this.type = type;
 	}
 	
 	public void setLogger(Logger log) {

@@ -16,14 +16,20 @@ permissions:
         tickets.new : true
         tickets.view : true
         tickets.highpriority : true
+        tickets.modlist : true
+        tickets.reload : true
    tickets.new:
      description: Gives you access to create a new ticket
      defualt: true
-   ticket.view:
+   tickets.view:
      description: Gives you access to view tickets
      defualt: op
-   ticket.highpriority:
+   tickets.highpriority:
      description: Gives the player extra priority when they create a ticket
      defualt: op
-
-
+   tickets.reload:
+     description: Reloads the plugins config
+     defualt: op
+   tickets.modlist:
+     description: Gives you access to view the modlist
+     defualt: op

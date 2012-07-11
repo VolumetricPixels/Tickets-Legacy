@@ -31,6 +31,7 @@ import org.getspout.spoutapi.SpoutManager;
 import org.getspout.spoutapi.event.input.KeyPressedEvent;
 import org.getspout.spoutapi.event.screen.ButtonClickEvent;
 import org.getspout.spoutapi.event.screen.ScreenshotReceivedEvent;
+import org.getspout.spoutapi.gui.Button;
 import org.getspout.spoutapi.gui.ListWidgetItem;
 import org.getspout.spoutapi.io.FileUtil;
 import org.getspout.spoutapi.keyboard.Keyboard;
@@ -38,6 +39,7 @@ import org.getspout.spoutapi.packet.PacketPreCacheFile;
 import org.getspout.spoutapi.player.SpoutPlayer;
 
 import za.net.quantumsicarius.tickets.Database.Database;
+import za.net.quantumsicarius.tickets.Enums.DatabaseTypes;
 import za.net.quantumsicarius.tickets.Enums.Screens;
 import za.net.quantumsicarius.tickets.GUI.AboutGUI;
 import za.net.quantumsicarius.tickets.GUI.ModListGUI;
@@ -74,7 +76,8 @@ public class Tickets extends JavaPlugin implements Listener{
 		closeDB();
 		
 		config.savePhotoid(nextPhotoId);
-		log.info("Tickets Disabled!");
+		
+		log.info("[Tickets] Disabled!");
 	}
 
 	@Override
@@ -92,7 +95,7 @@ public class Tickets extends JavaPlugin implements Listener{
 		// Instantiate the HashSets
 		screenshotQue = new HashSet<SpoutPlayer>();
 		// Instantiate the configuration manager
-		config = new ConfigManager(this);
+		config = new ConfigManager(this, log);
 		// Get the latest image id
 		nextPhotoId = config.getNextPhotoId();
 		
@@ -105,20 +108,33 @@ public class Tickets extends JavaPlugin implements Listener{
 				config.getDatabase(),
 				config.getDatabaseUser(), 
 				config.getDatabasePassword());
-		log.info("Tickets Enabled!");
+		
+		if (db.isConnected()) {
+			log.info("[Tickets] Enabled!");
+		} else {
+			log.severe("[Tickets] Failed to connect to database, disabling plugin!");
+			this.getServer().getPluginManager().disablePlugin(this);
+		}
 	}
 	
 	/**
 	 * Connect to Database
 	 */
 	public void setupDB(String host,int port, String Database, String User, String Password) {
-		db = new Database(host, port, Database, User, Password, log);
-		db.connect();
-		
-		if (!db.isConnected()) {
-			log.severe("Failed to connect to database, disabling plugin!");
-			this.getServer().getPluginManager().disablePlugin(this);
+		if (config.getDatabaseType().equalsIgnoreCase("mysql")) {
+			db = new Database(DatabaseTypes.MySQL, log);
+			db.setDatabase(Database);
+			db.setHost(host);
+			db.setPort(port);
+			db.setUsername(User);
+			db.setPassword(Password);
+		} else if (config.getDatabaseType().equalsIgnoreCase("sqlite")) {
+			db = new Database(DatabaseTypes.SQLite, log);
+		} else {
+			log.severe("[Tickets] Invalid database type! The supported types are: 'MySQL' and 'SQLite'");
+			db = new Database(DatabaseTypes.SQLite, log);
 		}
+		db.connect();
 	}
 	
 	/**
@@ -184,18 +200,47 @@ public class Tickets extends JavaPlugin implements Listener{
             		else if (args[0].equalsIgnoreCase("modlist")) {
             			SpoutPlayer player = SpoutManager.getPlayer((Player) sender);
             			
-            			ModListGUI gui = new ModListGUI(player, this, getMods(), getOpenTickets(""), getClosedTickets(""));
-            			ModlistGUIMap.put(player, gui);
+            			if (player.hasPermission("modlist") | player.isOp()) {
+                			ModListGUI gui = new ModListGUI(player, this, getMods(), getOpenTickets(""), getClosedTickets(""));
+                			ModlistGUIMap.put(player, gui);
+            			} else {
+            				sender.sendMessage(ChatColor.RED + "You do not have permission to view tickets!");
+            			}
+            		}
+            		// Reload plugin
+            		else if (args[0].equalsIgnoreCase("reload")) {      			
+            			SpoutPlayer player = SpoutManager.getPlayer((Player) sender);
+            			
+            			if (player.hasPermission("tickets.reload") | player.isOp()) {
+                			config.reload();
+                			player.sendMessage("[Tickets] Reloaded config!");
+            			} else {
+            				sender.sendMessage(ChatColor.RED + "You do not have permission to view tickets!");
+            			}
+            			
             		}
         		} else {
-        			sender.sendMessage(PluginTitle + ChatColor.AQUA + "Help Menu:");
-        			sender.sendMessage(ChatColor.AQUA + "/ticket new " + ChatColor.WHITE + "-" + ChatColor.GREEN + " Creates a new ticket");
-        			sender.sendMessage(ChatColor.AQUA + "/ticket view " + ChatColor.WHITE + "-" + ChatColor.GREEN + " View all tickets");
-        			sender.sendMessage(ChatColor.AQUA + "/ticket modlist " + ChatColor.WHITE + "-" + ChatColor.GREEN + " View all Moderators Statistics");
-        			sender.sendMessage(ChatColor.AQUA + "/ticket about " + ChatColor.WHITE + "-" + ChatColor.GREEN + " Views the plugins about page");
+        			SpoutPlayer player = SpoutManager.getPlayer((Player) sender);
+        			
+        			player.sendMessage(PluginTitle + ChatColor.AQUA + "Help Menu:");
+        			player.sendMessage(ChatColor.AQUA + "/ticket new " + ChatColor.WHITE + "-" + ChatColor.GREEN + " Creates a new ticket");
+        			if (player.hasPermission("tickets.view") | player.isOp()) {
+        				player.sendMessage(ChatColor.AQUA + "/ticket view " + ChatColor.WHITE + "-" + ChatColor.GREEN + " View all tickets");
+        			}
+        			if (player.hasPermission("tickets.modlist") | player.isOp()) {
+        				player.sendMessage(ChatColor.AQUA + "/ticket modlist " + ChatColor.WHITE + "-" + ChatColor.GREEN + " View all Moderators Statistics");
+        			}
+        			if (player.hasPermission("tickets.reload") | player.isOp()) {
+        				player.sendMessage(ChatColor.AQUA + "/ticket reload " + ChatColor.WHITE + "-" + ChatColor.GREEN + " Reloads the plugin's config file");
+        			}
+        			player.sendMessage(ChatColor.AQUA + "/ticket about " + ChatColor.WHITE + "-" + ChatColor.GREEN + " Views the plugins about page");
         		}
         		return true;
         	}
+    	}
+    	else {
+    		sender.sendMessage(ChatColor.RED + "You must be a player to use this command!");
+    		return true;
     	}
     	return false; 
     }
@@ -312,7 +357,7 @@ public class Tickets extends JavaPlugin implements Listener{
 				ticket.setImageId(rs.getInt("ImageId"));
 			}
 		} catch (SQLException e) {
-			log.severe("A SQL error occured while gettting a ticket instance: " + e.getMessage());
+			log.severe("[Tickets] A SQL error occured while gettting a ticket instance: " + e.getMessage());
 		}
     	
     	return ticket;
@@ -379,7 +424,7 @@ public class Tickets extends JavaPlugin implements Listener{
 				return getTicketInstance(rs.getInt("id"));
 			}
 		} catch (SQLException e) {
-			log.severe("A SQL error occured while executing a query: " + e.getMessage());
+			log.severe("[Tickets] A SQL error occured while executing a query: " + e.getMessage());
 		}
 		
 		return null;
@@ -546,10 +591,13 @@ public class Tickets extends JavaPlugin implements Listener{
     		return;
     	}
     	
+    	// The Player
     	final SpoutPlayer player = SpoutManager.getPlayer(event.getPlayer());
+		// The Button
+		final Button button = event.getButton();
     	
     	if (NewTicketGUI.containsKey(player)) {
-    		if (NewTicketGUI.get(player).isOkButton(event.getButton())) {
+    		if (NewTicketGUI.get(player).isOkButton(button)) {
     			TicketGUI gui = NewTicketGUI.get(player);
     			
     			if (!gui.validate()) {
@@ -596,13 +644,15 @@ public class Tickets extends JavaPlugin implements Listener{
     				}
     			}
     		}
-    		else if (NewTicketGUI.get(player).isScreenShotButton(event.getButton())) {
+    		else if (NewTicketGUI.get(player).isScreenShotButton(button)) {
     			// Close the Popup
     			player.getMainScreen().closePopup();
     			// Que the player for screenshot
     			screenshotQue.add(player);
-    			
+    			// Send player a message
     			player.sendMessage(PluginTitle + ChatColor.AQUA + "Press enter to save screenshot!");
+    			// Disabled
+    			button.setEnabled(false);
     			
     			this.getServer().getScheduler().scheduleAsyncDelayedTask(this, new Runnable() {
     				
@@ -612,6 +662,8 @@ public class Tickets extends JavaPlugin implements Listener{
 						if (screenshotQue.contains(player)) {
 							player.sendMessage(PluginTitle + ChatColor.AQUA + "You took to long to take the screenshot!");
 							screenshotQue.remove(player);
+							
+							button.setEnabled(true);
 							
 							if (NewTicketGUI.containsKey(player)) {
 								NewTicketGUI.get(player).open();

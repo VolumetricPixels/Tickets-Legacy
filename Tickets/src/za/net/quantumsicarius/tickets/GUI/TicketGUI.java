@@ -58,6 +58,8 @@ public class TicketGUI implements Listener{
 		title = new GenericLabel(ChatColor.GREEN + "New Ticket");
 		title.setX(175);
 		title.setY(60);
+		title.setHeight(10);
+		title.setWidth(80);
 		
 		inputTitle = new GenericTextField();
 		inputTitle.setPlaceholder("\u00A78 Enter title...");
