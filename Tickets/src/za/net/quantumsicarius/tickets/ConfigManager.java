@@ -18,7 +18,9 @@ public class ConfigManager {
 	
 	private InputStream defconfig;
 	private YamlConfiguration yml;
+	private YamlConfiguration imageYml;
 	private File file;
+	private File imageFile;
 	
 	private Logger log;
 	
@@ -27,9 +29,12 @@ public class ConfigManager {
 		this.log = log;
 		
 		file = new File(plugin.getDataFolder() + File.separator + "config.yml");
+		imageFile = new File(plugin.getDataFolder() + File.separator + "Pictures" + File.separator +"imageCounter.yml");
 		
 		yml = new YamlConfiguration();
+		imageYml = new YamlConfiguration();
 		
+		// Config File
 		if (!file.exists()) {
 			if (!file.getParentFile().exists()) {
 				file.getParentFile().mkdirs();
@@ -58,9 +63,23 @@ public class ConfigManager {
 		} else {
 			log.info("[Tickets] Found config file!");
 		}
+		
+		// Image counter file
+		if (!imageFile.exists()) {
+			if (!imageFile.getParentFile().exists()) {
+				imageFile.getParentFile().mkdirs();
+			}
+			
+			try {
+				imageFile.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 			
 		try {
 			yml.load(file);
+			imageYml.load(imageFile);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -125,7 +144,7 @@ public class ConfigManager {
 	}
 
 	public int getNextPhotoId() {
-		Integer out = yml.getInt("NextPhotoId");
+		Integer out = imageYml.getInt("NextPhotoId");
 		
 		if (out == null | out == 0) {
 			log.warning("[Tickets] Unable to get 'NextPhotoId' from config file!");
@@ -136,9 +155,9 @@ public class ConfigManager {
 	}
 
 	public void savePhotoid(int nextPhotoId) {
-		yml.set("NextPhotoId", nextPhotoId);	
+		imageYml.set("NextPhotoId", nextPhotoId);	
 		try {
-			yml.save(file);
+			imageYml.save(imageFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -158,6 +177,7 @@ public class ConfigManager {
 	public void reload() {
 		try {
 			yml.load(file);
+			imageYml.load(imageFile);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

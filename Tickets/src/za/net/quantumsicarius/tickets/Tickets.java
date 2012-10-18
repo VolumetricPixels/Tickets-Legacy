@@ -547,7 +547,7 @@ public class Tickets extends JavaPlugin implements Listener{
 		try {
 			int imageId = nextPhotoId;
 			//short imageId = nextPhotoId;
-			File imageFolder = new File(this.getDataFolder(), "pictures");
+			File imageFolder = new File(this.getDataFolder(), "Pictures");
 			if (!imageFolder.exists())
 				imageFolder.mkdir();
 			File imageFile = new File(imageFolder, imageId + ".png");
@@ -569,7 +569,7 @@ public class Tickets extends JavaPlugin implements Listener{
 	 * @param id The image id
 	 */
 	private void cachePictureFor(SpoutPlayer player, int id) {
-		File imageFolder = new File(this.getDataFolder(), "pictures");
+		File imageFolder = new File(this.getDataFolder(), "Pictures");
 		File file = new File(imageFolder, id + ".png");
 		long crc = -1;
 		try {
