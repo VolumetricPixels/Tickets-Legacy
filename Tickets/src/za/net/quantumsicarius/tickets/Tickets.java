@@ -770,32 +770,38 @@ public class Tickets extends JavaPlugin implements Listener{
         		player.getMainScreen().closePopup();
         		
         		Ticket ticket = getTicketByText(item.getTitle(), item.getText());
-        			
-        		String title = ticket.getTitle();
-        		String author = ticket.getAuthor();
-        		String description = ticket.getDescrption();
-        		String category = ticket.getCategory();
-        		String assignee = ticket.getAssignee();
-        		int priority = ticket.getPriority();
-        		long time = ticket.getTime();
-        		int Id = ticket.getId();
-        		int imageId = ticket.getImageId();
         		
-				TicketViewerGUI ticketViewer = new TicketViewerGUI (
-						this, 
-						player, 
-						title, 
-						description, 
-						author, 
-						category,
-						time, 
-						assignee, 
-						priority, 
-						Id, 
-						player,
-						imageId);
-				// Add player to HashMap
-				TicketViewGUIMap.put(player, ticketViewer);
+        		if (TicketViewGUIMap.containsKey(player)) {
+        			TicketViewGUIMap.get(player).open();
+        		} else {
+        			
+            		String title = ticket.getTitle();
+            		String author = ticket.getAuthor();
+            		String description = ticket.getDescrption();
+            		String category = ticket.getCategory();
+            		String assignee = ticket.getAssignee();
+            		int priority = ticket.getPriority();
+            		long time = ticket.getTime();
+            		int Id = ticket.getId();
+            		int imageId = ticket.getImageId();
+        			
+    				TicketViewerGUI ticketViewer = new TicketViewerGUI (
+    						this, 
+    						player, 
+    						title, 
+    						description, 
+    						author, 
+    						category,
+    						time, 
+    						assignee, 
+    						priority, 
+    						Id, 
+    						player,
+    						imageId);
+    				// Add player to HashMap
+    				TicketViewGUIMap.put(player, ticketViewer);
+        		}
+        		
     		}
     		else if (TicketListGUIMap.get(player).isCloseSelectButton(event.getButton())) {
     			

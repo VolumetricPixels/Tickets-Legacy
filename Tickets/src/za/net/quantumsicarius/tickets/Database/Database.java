@@ -136,7 +136,11 @@ public class Database {
 			}
 		}
 		else if (type == DatabaseTypes.SQLite) {
-			return true;
+			try {
+				return connection != null && !connection.isClosed();
+			} catch (SQLException e) {
+				return false;
+			}
 		}
 		else {
 			return false;
