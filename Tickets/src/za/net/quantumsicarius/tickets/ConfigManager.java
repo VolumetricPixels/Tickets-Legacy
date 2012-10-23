@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -172,6 +173,39 @@ public class ConfigManager {
 		}
 		
 		return out;
+	}
+	
+	public List<String> getCategories() {
+		List<String> out = yml.getStringList("Categories");
+		
+		if (out == null) {
+			log.warning("[Tickets] Unable to get 'Categories' from config file!");
+			return null;
+		}
+		
+		return out;
+	}
+	
+	public int getTicketTitleLength() {
+		Integer l = yml.getInt("TicketTitleLength");
+		
+		if (l == null | l == 0) {
+			log.warning("[Tickets] Unable to get 'TicketTitleLength' from config file!");
+			return 15;
+		}
+		
+		return l;
+	}
+	
+	public int getTicketDescriptionLength() {
+		Integer l = yml.getInt("TicketDescriptionLength");
+		
+		if (l == null | l == 0) {
+			log.warning("[Tickets] Unable to get 'TicketDescriptionLength' from config file!");
+			return 100;
+		}
+		
+		return l;
 	}
 	
 	public void reload() {

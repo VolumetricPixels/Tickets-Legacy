@@ -10,7 +10,7 @@ import org.bukkit.plugin.Plugin;
 import org.getspout.spoutapi.event.screen.TextFieldChangeEvent;
 import org.getspout.spoutapi.gui.Button;
 import org.getspout.spoutapi.gui.GenericButton;
-//import org.getspout.spoutapi.gui.GenericComboBox; - Not used since its bugged
+import org.getspout.spoutapi.gui.GenericComboBox;
 import org.getspout.spoutapi.gui.GenericLabel;
 import org.getspout.spoutapi.gui.GenericPopup;
 import org.getspout.spoutapi.gui.GenericTextField;
@@ -22,7 +22,7 @@ public class TicketGUI implements Listener{
 	
 	GenericLabel title;
 	GenericTextField inputTitle;
-	GenericTextField category;
+	GenericComboBox category;
 	GenericTextField inputDescription;
 	
 	GenericButton button;
@@ -40,10 +40,17 @@ public class TicketGUI implements Listener{
 	int screenId;
 	GenericLabel screenid_label;
 	
-	public TicketGUI(SpoutPlayer player ,Plugin plugin) {
+	int TitleLength = 0;
+	int DescriptionLength = 0;
+	
+	public TicketGUI(SpoutPlayer player ,Plugin plugin, List<String> categories, int TitleLength, int DescriptionLength) {
 		
 		this.player = player;
 		this.screenId = 0;
+		this.categories = categories;
+		
+		this.TitleLength = TitleLength;
+		this.DescriptionLength = DescriptionLength;
 		
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
 		
@@ -63,7 +70,7 @@ public class TicketGUI implements Listener{
 		
 		inputTitle = new GenericTextField();
 		inputTitle.setPlaceholder("\u00A78 Enter title...");
-		inputTitle.setMaximumCharacters(15);
+		inputTitle.setMaximumCharacters(this.TitleLength);
 		inputTitle.setX(90);
 		inputTitle.setY(80);
 		inputTitle.setWidth(210);
@@ -71,7 +78,7 @@ public class TicketGUI implements Listener{
 		
 		inputDescription = new GenericTextField();
 		inputDescription.setPlaceholder("\u00A78 Enter Description...");
-		inputDescription.setMaximumCharacters(100);
+		inputDescription.setMaximumCharacters(this.DescriptionLength);
 		inputDescription.setMaximumLines(10);
 		inputDescription.setX(90);
 		inputDescription.setY(110);
@@ -93,12 +100,23 @@ public class TicketGUI implements Listener{
 		screenid_label.setX(310);
 		screenid_label.setY(135);
 		
+		/* DEPRICATED
 		category = new GenericTextField();
 		category.setPlaceholder("\u00A78 Enter category...");
 		category.setMaximumCharacters(50);
 		category.setX(90);
 		category.setY(170);
 		category.setWidth(210);
+		category.setHeight(20);
+		category.setEnabled(true);
+		 */
+		category = new GenericComboBox();
+		category.setItems(categories);
+		category.setText("Category: ");
+		category.setSelection(0);
+		category.setX(90);
+		category.setY(170);
+		category.setWidth(100);
 		category.setHeight(20);
 		category.setEnabled(true);
 		
@@ -154,7 +172,7 @@ public class TicketGUI implements Listener{
 	 * @return The string category
 	 */
 	public String getCategory() {
-		return category.getText();
+		return category.getSelectedItem();
 	}
 	
 	/**
@@ -221,6 +239,14 @@ public class TicketGUI implements Listener{
 	}
 	
 	/**
+	 * Set's the GUI's category items
+	 * @param s The List of categories
+	 */
+	public void setCategories(List<String> s) {
+		this.categories = s;
+	}
+	
+	/**
 	 * Returns the attached image id
 	 * @return
 	 */
@@ -231,9 +257,6 @@ public class TicketGUI implements Listener{
 	public boolean validate() {
 		if (checkTitle()) {
 			if (checkDescription()) {
-				if (category.getText().equals("")) {
-					category.setText("None");
-				}
 				return true;
 			}
 		}

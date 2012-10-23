@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -69,6 +70,9 @@ public class Tickets extends JavaPlugin implements Listener{
 	// Define Sets
 	private Set<SpoutPlayer> screenshotQue;
 	
+	// The list of categories
+	private List<String> categories;
+	
 	private Logger log;
 	
 	@Override
@@ -98,6 +102,8 @@ public class Tickets extends JavaPlugin implements Listener{
 		config = new ConfigManager(this, log);
 		// Get the latest image id
 		nextPhotoId = config.getNextPhotoId();
+		// Get the categories
+		categories = config.getCategories();
 		
 		// Register event listeners
 		getServer().getPluginManager().registerEvents(this, this);
@@ -438,7 +444,7 @@ public class Tickets extends JavaPlugin implements Listener{
     public void newTicket(Player player) {
     	SpoutPlayer spoutplayer = SpoutManager.getPlayer(player);
     	// Create a new GUI object
-    	TicketGUI popup = new TicketGUI(spoutplayer ,this);
+    	TicketGUI popup = new TicketGUI(spoutplayer ,this, categories, config.getTicketTitleLength(), config.getTicketDescriptionLength());
     	
     	// Clean the old map
     	if (NewTicketGUI.containsKey(spoutplayer)) {
@@ -939,7 +945,7 @@ public class Tickets extends JavaPlugin implements Listener{
     			player.getMainScreen().closePopup();
     			AboutGUIMap.remove(player);
     			
-    			TicketGUI gui = new TicketGUI(player, this);
+    			TicketGUI gui = new TicketGUI(player, this, categories, config.getTicketTitleLength(), config.getTicketDescriptionLength());
     			NewTicketGUI.put(player, gui);
     		}
     		else if(AboutGUIMap.get(player).isCommand2Button(event.getButton())) {

@@ -1,6 +1,6 @@
 name: Tickets
 main: za.net.quantumsicarius.tickets.Tickets
-version: 0.0.5
+version: 0.0.6
 depend: [Spout]
 load: startup
 authors: [Quantum-Sicarius,Guy_de_Siguro]
