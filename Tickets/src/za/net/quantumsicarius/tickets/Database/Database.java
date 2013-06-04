@@ -260,7 +260,7 @@ public class Database {
 	
 
 	public void save(Ticket ticket) {
-		
+				
 		if (ticket.getId() == 0) {
 			StringBuilder query = new StringBuilder();
 			query.append("INSERT INTO Tickets (Open ,Author, Time, Category, Title, Location, Priority, Description, Assignee, ImageId) VALUES (");
@@ -280,7 +280,7 @@ public class Database {
 			query.append("," + ticket.getImageId());
 			query.append(")");
 			
-			query(query.toString());
+			this.query(query.toString());
 		} else {
 			StringBuilder query = new StringBuilder();
 			query.append("UPDATE Tickets SET ");
@@ -294,12 +294,13 @@ public class Database {
 			query.append(", ImageId='" + ticket.getImageId() + "'");
 			query.append(", Category='"+ ticket.getCategory() +"'");
 			if (ticket.getOpen()) {
-				query.append(", Open=" + 1);
+				query.append(", Open=1");
 			} else {
-				query.append(", Open=" + 2);
+				query.append(", Open=0");
 			}
+			query.append(" WHERE id='" + ticket.getId() +"'");
 			
-			query(query.toString());
+			this.query(query.toString());
 		}
 	}
 

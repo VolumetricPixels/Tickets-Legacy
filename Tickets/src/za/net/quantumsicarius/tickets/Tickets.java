@@ -661,7 +661,7 @@ public class Tickets extends JavaPlugin implements Listener{
     			// Disabled
     			button.setEnabled(false);
     			
-    			this.getServer().getScheduler().scheduleAsyncDelayedTask(this, new Runnable() {
+    			this.getServer().getScheduler().runTaskLaterAsynchronously(this, new Runnable() {
     				
 					@Override
 					public void run() {
@@ -681,8 +681,20 @@ public class Tickets extends JavaPlugin implements Listener{
     			}, 200L);
     		}
     		else if (NewTicketGUI.get(player).isCancelButton(event.getButton())) {
+    			if (NewTicketGUI.containsKey(player)) {
+    				TicketGUI gui = NewTicketGUI.get(player);
+    			
+    				File imageFolder = new File(this.getDataFolder(), "Pictures");
+    				File imageFile = new File(imageFolder, gui.getImageId() + ".png");
+    				if(imageFile.exists()) {
+    					imageFile.delete();
+    				}
+    				
+    				NewTicketGUI.remove(player);
+    			}
+    			
     			player.getMainScreen().closePopup();
-    			NewTicketGUI.remove(player);
+
     		}
     	}
     	
